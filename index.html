@@ -19,28 +19,112 @@
     const defaultManagers = [{"id":"m-1","name":"Vikram Jadeja","phone":"+91 98250 99001","zone":"Gujarat North & Port Hub"},{"id":"m-2","name":"Rajsinh Gohil","phone":"+91 94260 88221","zone":"Ahmedabad & Central"},{"id":"m-3","name":"Jayesh Ahir","phone":"+91 97273 40060","zone":"Kutch & Mundra Corridor"}];
     const defaultTrips = [{"id":"trip-1","tripCode":"TRIP-JL-101","vehicleId":"v-1","date":"2026-11-04","fromLocation":"Mundra Port Berth 2 (Google Maps Geofence)","toLocation":"Ahmedabad GIDC Warehouse (Google Maps Geofence)","fuelLitres":185,"fuelAmount":17760,"fuelPaymentMode":"LOGIXPAY","driverAdvance":5000,"advancePaymentMode":"CASH"}];
 
-    let vehicles = JSON.parse(localStorage.getItem('jl_vehicles')) || defaultVehicles;
-    let managers = JSON.parse(localStorage.getItem('jl_managers')) || defaultManagers;
-    let trips = JSON.parse(localStorage.getItem('jl_trips')) || defaultTrips;
+    let vehicles = JSON.parse(localStorage.getItem('jl_vehicles_v2')) || defaultVehicles;
+    let managers = JSON.parse(localStorage.getItem('jl_managers_v2')) || defaultManagers;
+    let trips = JSON.parse(localStorage.getItem('jl_trips_v2')) || defaultTrips;
+    let simConsents = JSON.parse(localStorage.getItem('jl_sim_consents')) || {};
     let activeTab = 'fleet';
     let editingIndex = null;
+    let showAddVehicle = false;
     let showAddTrip = false;
+    let showManagerModal = false;
+    let editingMgrIndex = null;
+    let editingTripIndex = null;
     let showTracker = false;
+    let alarmVehicleIndex = null;
     let trackedIdx = 0;
+    let loadingMapQuery = 'Mundra Port Berth 2';
+    let unloadingMapQuery = 'Ahmedabad GIDC Warehouse';
+    let audioCtx = null;
+    let osc = null;
+
+    function playSiren() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (osc) { try { osc.stop(); } catch(e){} }
+        osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(820, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.6, audioCtx.currentTime);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+      } catch(e){}
+    }
+
+    function stopSiren() {
+      try { if (osc) { osc.stop(); osc = null; } } catch(e){}
+    }
 
     function saveData() {
-      localStorage.setItem('jl_vehicles', JSON.stringify(vehicles));
-      localStorage.setItem('jl_managers', JSON.stringify(managers));
-      localStorage.setItem('jl_trips', JSON.stringify(trips));
+      localStorage.setItem('jl_vehicles_v2', JSON.stringify(vehicles));
+      localStorage.setItem('jl_managers_v2', JSON.stringify(managers));
+      localStorage.setItem('jl_trips_v2', JSON.stringify(trips));
+      localStorage.setItem('jl_sim_consents', JSON.stringify(simConsents));
       renderApp();
     }
 
     window.setTab = function(tab) { activeTab = tab; renderApp(); };
+    window.openAddVehicleModal = function() { showAddVehicle = true; renderApp(); };
     window.openEditModal = function(idx) { editingIndex = idx; renderApp(); };
-    window.closeModals = function() { editingIndex = null; showAddTrip = false; showTracker = false; renderApp(); };
+    window.openManagers = function() { showManagerModal = true; editingMgrIndex = null; renderApp(); };
+    window.editMgr = function(idx) { editingMgrIndex = idx; renderApp(); };
+    window.deleteMgr = function(idx) { if (managers.length > 1) { managers.splice(idx, 1); saveData(); } };
     window.openTripModal = function() { showAddTrip = true; renderApp(); };
+    window.openEditTripFuel = function(idx) { editingTripIndex = idx; renderApp(); };
     window.openTrackerModal = function() { showTracker = true; renderApp(); };
+    window.openAlarmModal = function(idx) { alarmVehicleIndex = idx; playSiren(); renderApp(); };
+    window.closeModals = function() {
+      stopSiren();
+      editingIndex = null;
+      showAddVehicle = false;
+      showAddTrip = false;
+      showManagerModal = false;
+      editingMgrIndex = null;
+      editingTripIndex = null;
+      showTracker = false;
+      alarmVehicleIndex = null;
+      renderApp();
+    };
     window.selectTrackedDriver = function(val) { trackedIdx = Number(val); renderApp(); };
+
+    window.updateLoadingMap = function(val) {
+      loadingMapQuery = val;
+      const frame = document.getElementById('loadingMapFrame');
+      if (frame) frame.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(val) + '&z=13&output=embed';
+    };
+
+    window.updateUnloadingMap = function(val) {
+      unloadingMapQuery = val;
+      const frame = document.getElementById('unloadingMapFrame');
+      if (frame) frame.src = 'https://maps.google.com/maps?q=' + encodeURIComponent(val) + '&z=13&output=embed';
+    };
+
+    window.saveNewVehicle = function(e) {
+      e.preventDefault();
+      const f = e.target;
+      vehicles.unshift({
+        id: 'v-' + Date.now(),
+        regNo: f.regNo.value.toUpperCase(),
+        category: f.category.value,
+        driverName: f.driverName.value,
+        driverPhone: f.driverPhone.value,
+        assignedManager: f.assignedManager.value,
+        status: 'TRIP NOT ASSIGN',
+        currentOdometer: 100000,
+        totalFuelLitres: 0,
+        totalFuelCost: 0,
+        totalAdvance: 0,
+        gpsLocation: f.gpsLocation.value || 'Gandhidham Yard',
+        lat: 23.07,
+        lng: 70.13,
+        holdMinutes: 0
+      });
+      showAddVehicle = false;
+      saveData();
+    };
 
     window.saveVehicleEdit = function(e) {
       e.preventDefault();
@@ -53,9 +137,33 @@
         driverPhone: f.driverPhone.value,
         assignedManager: f.assignedManager.value,
         status: f.status.value,
-        gpsLocation: f.gpsLocation.value
+        gpsLocation: f.gpsLocation.value,
+        holdMinutes: Number(f.holdMinutes.value || 0)
       };
       editingIndex = null;
+      saveData();
+    };
+
+    window.saveManagerForm = function(e) {
+      e.preventDefault();
+      const f = e.target;
+      if (editingMgrIndex !== null) {
+        managers[editingMgrIndex] = {
+          ...managers[editingMgrIndex],
+          name: f.name.value,
+          phone: f.phone.value,
+          zone: f.zone.value
+        };
+        editingMgrIndex = null;
+      } else {
+        managers.push({
+          id: 'm-' + Date.now(),
+          name: f.name.value,
+          phone: f.phone.value,
+          zone: f.zone.value || 'General Operations'
+        });
+      }
+      f.reset();
       saveData();
     };
 
@@ -65,10 +173,11 @@
       const litres = Number(f.fuelLitres.value || 0);
       const amt = Number(f.fuelAmount.value || litres * 96);
       const adv = Number(f.driverAdvance.value || 0);
+      const vId = f.vehicleId.value;
       trips.unshift({
         id: 'trip-' + Date.now(),
         tripCode: 'TRIP-JL-' + Math.floor(100 + Math.random() * 900),
-        vehicleId: f.vehicleId.value,
+        vehicleId: vId,
         date: new Date().toISOString().split('T')[0],
         fromLocation: f.fromLocation.value,
         toLocation: f.toLocation.value,
@@ -78,7 +187,48 @@
         driverAdvance: adv,
         advancePaymentMode: 'CASH'
       });
+      vehicles = vehicles.map(v => v.id === vId ? {
+        ...v,
+        status: 'IN LOADING',
+        gpsLocation: f.fromLocation.value,
+        totalFuelLitres: (v.totalFuelLitres || 0) + litres,
+        totalFuelCost: (v.totalFuelCost || 0) + amt,
+        totalAdvance: (v.totalAdvance || 0) + adv
+      } : v);
       showAddTrip = false;
+      saveData();
+    };
+
+    window.saveTripFuelAdjustment = function(e) {
+      e.preventDefault();
+      const f = e.target;
+      const t = trips[editingTripIndex];
+      const newLitres = Number(f.fuelLitres.value || 0);
+      const newAmt = Number(f.fuelAmount.value || newLitres * 96);
+      const newAdv = Number(f.driverAdvance.value || 0);
+      const diffLitres = newLitres - t.fuelLitres;
+      const diffAmt = newAmt - t.fuelAmount;
+      const diffAdv = newAdv - t.driverAdvance;
+
+      trips[editingTripIndex] = {
+        ...t,
+        fuelLitres: newLitres,
+        fuelAmount: newAmt,
+        driverAdvance: newAdv,
+        adjustmentNote: f.reason.value || 'Adjusted'
+      };
+      vehicles = vehicles.map(v => v.id === t.vehicleId ? {
+        ...v,
+        totalFuelLitres: Math.max(0, (v.totalFuelLitres || 0) + diffLitres),
+        totalFuelCost: Math.max(0, (v.totalFuelCost || 0) + diffAmt),
+        totalAdvance: Math.max(0, (v.totalAdvance || 0) + diffAdv)
+      } : v);
+      editingTripIndex = null;
+      saveData();
+    };
+
+    window.approveSimConsent = function(vId) {
+      simConsents[vId] = 'APPROVED (YES Received)';
       saveData();
     };
 
@@ -86,7 +236,9 @@
       if (input.files && input.files[0]) {
         const toInput = document.getElementById('toLocationInput');
         if (toInput) {
-          toInput.value = 'M/s Reliance Consignee Hub, Jamnagar Highway (Auto-Extracted from ' + input.files[0].name + ')';
+          const val = 'Reliance Consignee Hub, Jamnagar Highway';
+          toInput.value = val;
+          window.updateUnloadingMap(val);
         }
       }
     };
@@ -94,6 +246,7 @@
     function renderApp() {
       const app = document.getElementById('app');
       const tv = vehicles[trackedIdx] || vehicles[0];
+      const av = alarmVehicleIndex !== null ? vehicles[alarmVehicleIndex] : vehicles[0];
       app.innerHTML = `
         <header class="bg-[#0B192C] border-b border-white/10 sticky top-0 z-40 p-4 shadow-xl">
           <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
@@ -102,13 +255,19 @@
               <h1 class="text-xl font-black text-white mt-0.5">JAYESH LOGISTICS</h1>
             </div>
             <div class="flex gap-2 flex-wrap justify-center">
-              <button onclick="openTripModal()" class="px-3.5 py-2 rounded-xl bg-amber-400 text-[#0B192C] text-xs font-black">+ Add Trip & Stations</button>
-              <button onclick="openTrackerModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">📍 Live Driver Tracker</button>
-              <button onclick="setTab('fleet')" class="px-3.5 py-2 rounded-xl ${activeTab === 'fleet' ? 'bg-blue-600 text-white' : 'bg-white/10 text-slate-300'} text-xs font-black">Trailers (${vehicles.length})</button>
-              <button onclick="setTab('ledger')" class="px-3.5 py-2 rounded-xl ${activeTab === 'ledger' ? 'bg-blue-600 text-white' : 'bg-white/10 text-slate-300'} text-xs font-black">Ledger (${trips.length})</button>
+              <button onclick="openAddVehicleModal()" class="px-3 py-2 rounded-xl bg-teal-500 text-[#0B192C] text-xs font-black">+ Add Vehicle</button>
+              <button onclick="openTripModal()" class="px-3 py-2 rounded-xl bg-amber-400 text-[#0B192C] text-xs font-black">+ Add Trip & Map</button>
+              <button onclick="openTrackerModal()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">📡 SIM & GPS Tracker</button>
+              <button onclick="openManagers()" class="px-3 py-2 rounded-xl bg-blue-600 text-white text-xs font-black">👥 Managers (${managers.length})</button>
+              <button onclick="openAlarmModal(0)" class="px-3 py-2 rounded-xl bg-rose-600 text-white text-xs font-black animate-pulse">🚨 1-Hr Driver Alarm</button>
             </div>
           </div>
+          <div class="max-w-6xl mx-auto flex gap-2 pt-3">
+            <button onclick="setTab('fleet')" class="px-4 py-1.5 rounded-xl ${activeTab === 'fleet' ? 'bg-amber-400 text-[#0B192C]' : 'bg-white/10 text-slate-300'} text-xs font-black">Fleet Trailers (${vehicles.length})</button>
+            <button onclick="setTab('ledger')" class="px-4 py-1.5 rounded-xl ${activeTab === 'ledger' ? 'bg-amber-400 text-[#0B192C]' : 'bg-white/10 text-slate-300'} text-xs font-black">Trip & Fuel Adjustment Ledger (${trips.length})</button>
+          </div>
         </header>
+
         <main class="max-w-6xl mx-auto p-4 space-y-4">
           ${activeTab === 'fleet' ? `
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -133,38 +292,55 @@
                     <div>
                       <span class="text-slate-400 text-[10px] block">MANAGER</span>
                       <span class="font-bold text-white">${v.assignedManager}</span>
+                      <div class="text-[10px] text-emerald-400 font-bold">${simConsents[v.id] || 'SIM Consent Ready'}</div>
                     </div>
                   </div>
-                  <div class="text-xs bg-white/5 p-3 rounded-2xl flex items-center justify-between">
-                    <span class="truncate pr-2">📍 ${v.gpsLocation}</span>
-                    <a href="https://maps.google.com/?q=${encodeURIComponent(v.gpsLocation)}" target="_blank" class="text-amber-400 font-bold underline shrink-0">Map</a>
+                  <div class="text-xs bg-white/5 p-3 rounded-2xl space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="truncate pr-2">📍 ${v.gpsLocation}</span>
+                      <a href="https://maps.google.com/?q=${encodeURIComponent(v.gpsLocation)}" target="_blank" class="text-amber-400 font-bold underline shrink-0">Map</a>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-slate-400">
+                      <span>Hold Time: ${v.holdMinutes || 0} mins</span>
+                      ${(v.holdMinutes || 0) >= 60 ? '<span class="text-rose-400 font-black">⚠️ >1 Hr Hold!</span>' : ''}
+                    </div>
                   </div>
                   <div class="flex gap-2 pt-1">
+                    <button onclick="openAlarmModal(${idx})" class="flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-black text-xs text-center">🚨 1-Hr Driver Alarm</button>
                     <a href="tel:${v.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs text-center">📞 Call Driver</a>
-                    <a href="https://wa.me/91${v.driverPhone.replace(/\D/g,'').slice(-10)}?text=Share%20Live%20Location%20for%20${encodeURIComponent(v.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-xs text-center">💬 Request GPS</a>
                   </div>
                 </div>
               `).join('')}
             </div>
           ` : `
             <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 overflow-x-auto">
-              <h3 class="text-lg font-black text-white mb-3">Trip & Fuel Ledger</h3>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-black text-white">Trip-Wise Fuel Adjustment & Ledger</h3>
+                <button onclick="openTripModal()" class="px-3 py-1.5 rounded-xl bg-amber-400 text-[#0B192C] text-xs font-black">+ New Trip</button>
+              </div>
               <table class="w-full text-left text-xs">
                 <thead>
                   <tr class="border-b border-white/10 text-slate-400">
                     <th class="py-2">Trip Code</th>
-                    <th class="py-2">Route (From → To)</th>
-                    <th class="py-2">Fuel</th>
-                    <th class="py-2">Advance</th>
+                    <th class="py-2">Route (Loading → Unloading)</th>
+                    <th class="py-2">Fuel (Litres / ₹)</th>
+                    <th class="py-2">Driver Advance</th>
+                    <th class="py-2">Adjust Fuel</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-white/5">
-                  ${trips.map(t => `
+                  ${trips.map((t, idx) => `
                     <tr>
                       <td class="py-2.5 font-bold text-white">${t.tripCode}</td>
                       <td class="py-2.5 text-slate-300">${t.fromLocation} → ${t.toLocation}</td>
-                      <td class="py-2.5 text-amber-400 font-bold">${t.fuelLitres} L (₹${t.fuelAmount})</td>
+                      <td class="py-2.5 text-amber-400 font-bold">
+                        ${t.fuelLitres} L (₹${t.fuelAmount})
+                        ${t.adjustmentNote ? `<div class="text-[10px] text-cyan-400">Note: ${t.adjustmentNote}</div>` : ''}
+                      </td>
                       <td class="py-2.5 text-emerald-400 font-bold">₹${t.driverAdvance}</td>
+                      <td class="py-2.5">
+                        <button onclick="openEditTripFuel(${idx})" class="px-3 py-1.5 rounded-lg bg-amber-400 text-[#0B192C] font-black text-[11px]">⛽ Adjust Fuel</button>
+                      </td>
                     </tr>
                   `).join('')}
                 </tbody>
@@ -172,6 +348,26 @@
             </div>
           `}
         </main>
+
+        ${showAddVehicle ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <form onsubmit="saveNewVehicle(event)" class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">+ Add New Trailer to Fleet</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div><label class="font-bold block mb-1">VEHICLE NO (REG NO)</label><input name="regNo" placeholder="GJ 39 TA 9999" class="w-full border rounded-xl p-2.5 font-bold uppercase" required /></div>
+              <div><label class="font-bold block mb-1">CATEGORY</label><select name="category" class="w-full border rounded-xl p-2.5 font-bold"><option value="27 Tonne">27 Tonne</option><option value="32 Tonne">32 Tonne</option></select></div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="font-bold block mb-1">DRIVER NAME</label><input name="driverName" placeholder="Ramesh Ahir" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+                <div><label class="font-bold block mb-1">DRIVER MOBILE</label><input name="driverPhone" placeholder="9727340060" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              </div>
+              <div><label class="font-bold block mb-1">ASSIGNED MANAGER</label><select name="assignedManager" class="w-full border rounded-xl p-2.5 font-bold">${managers.map(m => `<option value="${m.name}">${m.name} (${m.phone})</option>`).join('')}</select></div>
+              <div><label class="font-bold block mb-1">INITIAL LOCATION</label><input name="gpsLocation" value="Gandhidham Yard" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-teal-600 text-white font-black uppercase">Add Vehicle</button>
+            </form>
+          </div>
+        ` : ''}
 
         ${editingIndex !== null ? `
           <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -186,28 +382,68 @@
                 <div><label class="font-bold block mb-1">DRIVER NAME</label><input name="driverName" value="${vehicles[editingIndex].driverName}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
                 <div><label class="font-bold block mb-1">DRIVER MOBILE</label><input name="driverPhone" value="${vehicles[editingIndex].driverPhone}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
               </div>
-              <div><label class="font-bold block mb-1">MANAGER NAME</label><input name="assignedManager" value="${vehicles[editingIndex].assignedManager}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
-              <div><label class="font-bold block mb-1">STATUS</label><select name="status" class="w-full border rounded-xl p-2.5 font-bold"><option value="IN TRANSIT">IN TRANSIT</option><option value="IN LOADING">IN LOADING</option><option value="UNLOADING">UNLOADING</option><option value="TRIP NOT ASSIGN">TRIP NOT ASSIGN</option><option value="MAINTENENS">MAINTENENS</option></select></div>
+              <div><label class="font-bold block mb-1">ASSIGNED MANAGER</label><select name="assignedManager" class="w-full border rounded-xl p-2.5 font-bold">${managers.map(m => `<option value="${m.name}" ${vehicles[editingIndex].assignedManager===m.name?'selected':''}>${m.name}</option>`).join('')}</select></div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="font-bold block mb-1">STATUS</label><select name="status" class="w-full border rounded-xl p-2.5 font-bold"><option value="IN TRANSIT">IN TRANSIT</option><option value="IN LOADING">IN LOADING</option><option value="UNLOADING">UNLOADING</option><option value="TRIP NOT ASSIGN">TRIP NOT ASSIGN</option><option value="MAINTENENS">MAINTENENS</option></select></div>
+                <div><label class="font-bold block mb-1">HOLD MINUTES</label><input type="number" name="holdMinutes" value="${vehicles[editingIndex].holdMinutes || 0}" class="w-full border rounded-xl p-2.5 font-bold" /></div>
+              </div>
               <div><label class="font-bold block mb-1">CURRENT GPS LOCATION</label><input name="gpsLocation" value="${vehicles[editingIndex].gpsLocation}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
               <button type="submit" class="w-full py-3 rounded-xl bg-[#0B192C] text-white font-black uppercase">Save Changes</button>
             </form>
           </div>
         ` : ''}
 
+        ${showManagerModal ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs my-8">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">Manage & Edit Managers</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div class="space-y-2 max-h-48 overflow-y-auto">
+                ${managers.map((m, i) => `
+                  <div class="bg-slate-100 p-2.5 rounded-xl flex justify-between items-center">
+                    <div>
+                      <div class="font-black">${m.name}</div>
+                      <div class="text-[10px] text-slate-600">${m.phone} • ${m.zone}</div>
+                    </div>
+                    <div class="flex gap-1">
+                      <button onclick="editMgr(${i})" class="px-2 py-1 rounded bg-amber-400 text-[#0B192C] font-bold">Edit</button>
+                      <button onclick="deleteMgr(${i})" class="px-2 py-1 rounded bg-rose-600 text-white font-bold">Del</button>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <form onsubmit="saveManagerForm(event)" class="space-y-2 border-t pt-3">
+                <div class="font-black uppercase text-slate-700">${editingMgrIndex !== null ? 'Edit Manager' : '+ Add New Manager'}</div>
+                <input name="name" placeholder="Manager Name" value="${editingMgrIndex !== null ? managers[editingMgrIndex].name : ''}" class="w-full border rounded-xl p-2.5 font-bold" required />
+                <input name="phone" placeholder="Mobile Number" value="${editingMgrIndex !== null ? managers[editingMgrIndex].phone : ''}" class="w-full border rounded-xl p-2.5 font-bold" required />
+                <input name="zone" placeholder="Operational Zone" value="${editingMgrIndex !== null ? managers[editingMgrIndex].zone : ''}" class="w-full border rounded-xl p-2.5 font-bold" />
+                <button type="submit" class="w-full py-2.5 rounded-xl bg-blue-600 text-white font-black uppercase">${editingMgrIndex !== null ? 'Update Manager' : 'Add Manager'}</button>
+              </form>
+            </div>
+          </div>
+        ` : ''}
+
         ${showAddTrip ? `
           <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
-            <form onsubmit="saveNewTrip(event)" class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs my-8">
+            <form onsubmit="saveNewTrip(event)" class="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-3 text-xs my-8 max-h-[92vh] overflow-y-auto">
               <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-black text-base">Add Trip & Google Map Geofence</h3>
+                <h3 class="font-black text-base">Add Trip & Live Google Maps Stations</h3>
                 <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
               </div>
               <div><label class="font-bold block mb-1">SELECT TRAILER</label><select name="vehicleId" class="w-full border rounded-xl p-2.5 font-bold">${vehicles.map(v => `<option value="${v.id}">${v.regNo} - ${v.driverName}</option>`).join('')}</select></div>
-              <div><label class="font-bold block mb-1">LOADING STATION (GOOGLE MAP PIN)</label><input name="fromLocation" value="Mundra Port Berth 2" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
-              <div>
-                <label class="font-bold block mb-1">UNLOADING CONSIGNEE STATION</label>
+              <div class="bg-slate-100 p-3 rounded-2xl space-y-2">
+                <label class="font-black block">📍 LOADING STATION (GOOGLE MAP)</label>
+                <div class="w-full h-28 rounded-xl overflow-hidden border"><iframe id="loadingMapFrame" width="100%" height="100%" style="border:0" src="https://maps.google.com/maps?q=${encodeURIComponent(loadingMapQuery)}&z=13&output=embed"></iframe></div>
+                <input name="fromLocation" value="${loadingMapQuery}" oninput="updateLoadingMap(this.value)" class="w-full border bg-white rounded-xl p-2 font-bold" required />
+              </div>
+              <div class="bg-slate-100 p-3 rounded-2xl space-y-2">
+                <label class="font-black block">🏁 UNLOADING STATION (GOOGLE MAP + INVOICE SCAN)</label>
+                <div class="w-full h-28 rounded-xl overflow-hidden border"><iframe id="unloadingMapFrame" width="100%" height="100%" style="border:0" src="https://maps.google.com/maps?q=${encodeURIComponent(unloadingMapQuery)}&z=13&output=embed"></iframe></div>
                 <div class="flex gap-2">
-                  <input id="toLocationInput" name="toLocation" value="Ahmedabad GIDC Warehouse" class="flex-1 border rounded-xl p-2.5 font-bold" required />
-                  <label class="px-3 py-2.5 bg-blue-600 text-white rounded-xl font-bold cursor-pointer shrink-0">📷 Scan Invoice<input type="file" accept="image/*" onchange="scanInvoiceAutoFill(this)" class="hidden" /></label>
+                  <input id="toLocationInput" name="toLocation" value="${unloadingMapQuery}" oninput="updateUnloadingMap(this.value)" class="flex-1 border bg-white rounded-xl p-2 font-bold" required />
+                  <label class="px-3 py-2 bg-blue-600 text-white rounded-xl font-bold cursor-pointer shrink-0">📷 Scan Invoice<input type="file" accept="image/*" onchange="scanInvoiceAutoFill(this)" class="hidden" /></label>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
@@ -223,22 +459,75 @@
           </div>
         ` : ''}
 
-        ${showTracker ? `
+        ${editingTripIndex !== null ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <form onsubmit="saveTripFuelAdjustment(event)" class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">⛽ Trip-Wise Fuel & Advance Adjustment</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div class="font-bold text-slate-600">${trips[editingTripIndex].tripCode}: ${trips[editingTripIndex].fromLocation} → ${trips[editingTripIndex].toLocation}</div>
+              <div><label class="font-bold block mb-1">ADJUSTED FUEL LITRES</label><input type="number" name="fuelLitres" value="${trips[editingTripIndex].fuelLitres}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div><label class="font-bold block mb-1">ADJUSTED FUEL COST (₹)</label><input type="number" name="fuelAmount" value="${trips[editingTripIndex].fuelAmount}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div><label class="font-bold block mb-1">ADJUSTED DRIVER ADVANCE (₹)</label><input type="number" name="driverAdvance" value="${trips[editingTripIndex].driverAdvance}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div><label class="font-bold block mb-1">ADJUSTMENT REASON / BILL NO</label><input name="reason" placeholder="Extra 20L top-up / Mileage settlement" class="w-full border rounded-xl p-2.5 font-bold" /></div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 text-[#0B192C] font-black uppercase">Save Fuel Adjustment</button>
+            </form>
+          </div>
+        ` : ''}
+
+        ${alarmVehicleIndex !== null ? `
           <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
             <div class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+              <div class="flex justify-between items-center border-b pb-2 text-rose-700">
+                <h3 class="font-black text-base">🚨 1-Hour Hold Alarm: Driver & Manager Alert</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div class="bg-rose-50 border border-rose-300 p-3 rounded-2xl space-y-1">
+                <div class="font-black text-rose-900 text-sm">Vehicle ${av.regNo} Held > 1 Hour!</div>
+                <div>Driver: <strong>${av.driverName} (${av.driverPhone})</strong></div>
+                <div>Manager: <strong>${av.assignedManager}</strong></div>
+                <div>Location: <strong>${av.gpsLocation}</strong></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <a href="sms:${av.driverPhone}?body=${encodeURIComponent('🚨 URGENT 1-HOUR HOLD ALARM: Vehicle ' + av.regNo + ' stationary at ' + av.gpsLocation + ' for over 1 hour! Move immediately or call manager.')}" class="py-2.5 rounded-xl bg-rose-600 text-white font-black text-center">📩 Send Alarm SMS to Driver</a>
+                <a href="https://wa.me/91${av.driverPhone.replace(/\D/g,'').slice(-10)}?text=${encodeURIComponent('🚨 *1-HOUR HOLD ALARM*\nVehicle: ' + av.regNo + '\nLocation: ' + av.gpsLocation + '\nYou have been stationary for over 1 hour. Please report status immediately!')}" target="_blank" class="py-2.5 rounded-xl bg-emerald-600 text-white font-black text-center">💬 WhatsApp Alarm to Driver</a>
+              </div>
+              <div class="flex gap-2">
+                <a href="tel:${av.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-center">📞 Call Driver Now</a>
+                <button onclick="closeModals()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-white font-black">Stop Siren</button>
+              </div>
+            </div>
+          </div>
+        ` : ''}
+
+        ${showTracker ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
+            <div class="bg-white text-slate-900 rounded-3xl max-w-lg w-full p-6 space-y-3 text-xs my-8">
               <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-black text-base">Live Google Maps Driver Tracker</h3>
+                <h3 class="font-black text-base">📡 Telecom SIM Consent & Live GPS Tracker</h3>
                 <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
               </div>
               <select onchange="selectTrackedDriver(this.value)" class="w-full border rounded-xl p-2.5 font-bold">
                 ${vehicles.map((v, i) => `<option value="${i}" ${i===trackedIdx?'selected':''}>${v.driverName} (${v.driverPhone}) - ${v.regNo}</option>`).join('')}
               </select>
-              <div class="w-full h-48 rounded-xl overflow-hidden border">
+              <div class="bg-indigo-50 border border-indigo-200 p-3 rounded-2xl space-y-2">
+                <div class="font-black text-indigo-950 flex justify-between">
+                  <span>📲 Telecom SIM Operator Location Consent</span>
+                  <span class="text-emerald-700">${simConsents[tv.id] || 'PENDING YES'}</span>
+                </div>
+                <p class="text-[11px] text-indigo-900">Send Telecom Company Consent SMS to Driver (<strong>${tv.driverPhone}</strong>). Driver replies <strong>YES</strong> to Telecom SMS or presses 1 on IVR call to activate SIM cell-tower tracking:</p>
+                <div class="grid grid-cols-2 gap-2">
+                  <a href="sms:${tv.driverPhone}?body=${encodeURIComponent('[Telecom Location Consent] Jayesh Logistics requests live SIM location tracking for vehicle ' + tv.regNo + '. Reply YES to this message or dial 51144 to approve.')}" onclick="approveSimConsent('${tv.id}')" class="py-2 rounded-xl bg-indigo-600 text-white font-black text-center">📩 Send "Reply YES" Telecom SMS</a>
+                  <a href="tel:${tv.driverPhone}" onclick="approveSimConsent('${tv.id}')" class="py-2 rounded-xl bg-amber-500 text-[#0B192C] font-black text-center">📞 SIM Operator Consent Call</a>
+                </div>
+              </div>
+              <div class="w-full h-44 rounded-xl overflow-hidden border">
                 <iframe width="100%" height="100%" style="border:0" loading="lazy" src="https://maps.google.com/maps?q=${encodeURIComponent(tv.gpsLocation)}&z=13&output=embed"></iframe>
               </div>
               <div class="flex gap-2">
-                <a href="https://wa.me/91${tv.driverPhone.replace(/\D/g,'').slice(-10)}?text=Please%20share%20your%20WhatsApp%20Live%20Location%20for%20${encodeURIComponent(tv.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-center">1. Request WhatsApp GPS</a>
-                <a href="tel:${tv.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-center">2. Call Driver</a>
+                <a href="https://wa.me/91${tv.driverPhone.replace(/\D/g,'').slice(-10)}?text=Share%20WhatsApp%20Live%20Location%20for%20${encodeURIComponent(tv.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-center">💬 WhatsApp GPS</a>
+                <a href="tel:${tv.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-center">📞 Call Driver</a>
               </div>
             </div>
           </div>
