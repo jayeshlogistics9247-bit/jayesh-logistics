@@ -1,12 +1,324 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0B192C" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>Jayesh Logistics Fleet & Fuel App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body style="background:#0B192C; color:#fff; font-family:sans-serif; text-align:center; padding:40px;">
-  <h1>JAYESH LOGISTICS FLEET & FUEL MANAGEMENT</h1>
-  <p>Standalone App Exported successfully.</p>
+<body class="bg-[#0B192C] text-slate-100 font-sans min-h-screen pb-14">
+  <div id="toast" class="fixed top-4 right-4 z-50 hidden px-5 py-3 rounded-2xl shadow-2xl font-black text-xs bg-emerald-950 text-emerald-200 border border-emerald-500"></div>
+
+  <header class="bg-[#0B192C] border-b border-white/10 sticky top-0 z-40 shadow-xl">
+    <div class="max-w-7xl mx-auto px-4 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-400 text-[#0B192C] font-black flex items-center justify-center text-lg shadow">JL</div>
+        <div>
+          <span class="bg-amber-400 text-[#0B192C] text-[9px] font-black uppercase px-2 py-0.5 rounded">FLEET & FUEL AVG APP</span>
+          <h1 class="text-lg sm:text-xl font-black text-white">JAYESH LOGISTICS</h1>
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-1.5">
+        <button onclick="openFuelModal()" class="px-3 py-2 rounded-xl bg-amber-400 text-[#0B192C] text-xs font-black cursor-pointer shadow">📷 + Add Fuel / Photo Scan</button>
+        <button onclick="openAddVehicleModal()" class="px-3 py-2 rounded-xl bg-teal-500 text-[#0B192C] text-xs font-black cursor-pointer shadow">+ Add Vehicle</button>
+        <button onclick="openAddTripModal()" class="px-3 py-2 rounded-xl bg-blue-500 text-white text-xs font-black cursor-pointer shadow">+ Add Trip & Map</button>
+        <button onclick="openGpsModal()" class="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black cursor-pointer shadow">📍 Phone GPS & SIM Tracker</button>
+        <button onclick="openAlarmModal(0)" class="px-3 py-2 rounded-xl bg-rose-600 text-white text-xs font-black cursor-pointer animate-pulse shadow">🚨 1-Hr Alarm</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-5 space-y-5">
+    <div id="kpiBar" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5"></div>
+    <div id="vehicleGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </main>
+
+  <!-- ADD FUEL / PHOTO SCAN MODAL -->
+  <div id="fuelModal" class="fixed inset-0 z-50 bg-black/80 hidden items-center justify-center p-4">
+    <div class="bg-white text-[#0B192C] rounded-3xl max-w-md w-full p-5 space-y-3 text-xs max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-black text-base">📷 + Add Fuel / Photo Scan (Diesel & KM)</h3>
+        <button onclick="closeModals()" class="px-2.5 py-1 bg-slate-200 rounded-lg font-black">✕</button>
+      </div>
+      <div class="bg-amber-50 border border-amber-400 p-3 rounded-xl space-y-2">
+        <div class="font-black text-amber-950">AI Photo Auto-Fetch / Sample Receipt Tester:</div>
+        <div class="grid grid-cols-3 gap-1.5">
+          <button type="button" onclick="fillSample('iocl')" class="p-2 bg-white border border-amber-300 rounded-lg font-black text-[10px]">🧾 IOCL 195L</button>
+          <button type="button" onclick="fillSample('reliance')" class="p-2 bg-white border border-amber-300 rounded-lg font-black text-[10px]">🧾 Reliance 235L</button>
+          <button type="button" onclick="fillSample('bpcl')" class="p-2 bg-white border border-amber-300 rounded-lg font-black text-[10px]">🧾 BPCL 165L</button>
+        </div>
+      </div>
+      <div>
+        <label class="font-bold block mb-1">SELECT TRAILER</label>
+        <select id="fVehicle" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold"></select>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="font-bold block mb-1">CURRENT ODOMETER (KM)</label>
+          <input id="fOdo" type="number" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold" />
+        </div>
+        <div>
+          <label class="font-bold block mb-1">DIESEL LITRES (L)</label>
+          <input id="fLitres" type="number" oninput="document.getElementById('fAmt').value = this.value * 96" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold" />
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <div>
+          <label class="font-bold block mb-1">FUEL EXPENSE (₹)</label>
+          <input id="fAmt" type="number" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold" />
+        </div>
+        <div>
+          <label class="font-bold block mb-1">DRIVER ADVANCE (₹)</label>
+          <input id="fAdv" type="number" value="5000" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold" />
+        </div>
+      </div>
+      <div>
+        <label class="font-bold block mb-1">STATION NARRATION</label>
+        <input id="fStation" type="text" value="IOCL Samakhiali Highway Pump" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold" />
+      </div>
+      <button onclick="saveFuelEntry()" class="w-full py-3 bg-[#0B192C] text-amber-400 font-black rounded-xl uppercase">Save Fuel & Odometer</button>
+    </div>
+  </div>
+
+  <!-- VEHICLE HISTORICAL LEDGER MODAL -->
+  <div id="ledgerModal" class="fixed inset-0 z-50 bg-black/80 hidden items-center justify-center p-4">
+    <div class="bg-white text-[#0B192C] rounded-3xl max-w-2xl w-full p-5 space-y-3 text-xs max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 id="ledgerTitle" class="font-black text-base">Vehicle Historical Ledger</h3>
+        <button onclick="closeModals()" class="px-2.5 py-1 bg-slate-200 rounded-lg font-black">✕</button>
+      </div>
+      <div id="ledgerBody" class="space-y-3"></div>
+    </div>
+  </div>
+
+  <!-- PHONE GPS PERMISSION & SIM TRACKER MODAL -->
+  <div id="gpsModal" class="fixed inset-0 z-50 bg-black/80 hidden items-center justify-center p-4">
+    <div class="bg-white text-[#0B192C] rounded-3xl max-w-lg w-full p-5 space-y-3 text-xs max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b pb-2">
+        <h3 class="font-black text-base">📍 Allow Phone GPS Permission & Live Map</h3>
+        <button onclick="closeModals()" class="px-2.5 py-1 bg-slate-200 rounded-lg font-black">✕</button>
+      </div>
+      <select id="gpsVehicleSelect" onchange="updateGpsModalView()" class="w-full bg-slate-100 border p-2.5 rounded-xl font-bold"></select>
+      <button onclick="allowPhoneGps()" class="w-full py-3 bg-emerald-600 text-white font-black rounded-xl shadow">📍 Allow Phone GPS Permission (Instant 0-Sec Track)</button>
+      <div id="gpsMapContainer" class="w-full h-52 rounded-xl overflow-hidden border"></div>
+    </div>
+  </div>
+
+  <script>
+    let vehicles = JSON.parse(localStorage.getItem('jl_v2_vehicles')) || [{"id":"v-1","regNo":"GJ 39 TA 7147","category":"27 Tonne","driverName":"Ramesh Ahir","driverPhone":"9727340060","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","startOdometer":144540,"currentOdometer":145200,"totalDistanceKm":660,"totalFuelLitres":185,"totalFuelCost":17760,"totalAdvance":5000,"stationNarration":"IOCL Samakhiali Highway Pump","gpsLocation":"NH-27 Samakhiali Toll Plaza","lat":23.32,"lng":70.45,"holdMinutes":65},{"id":"v-2","regNo":"GJ 39 TA 5347","category":"27 Tonne","driverName":"Suresh Patel","driverPhone":"9825011223","assignedManager":"Vikram Jadeja","status":"IN LOADING","startOdometer":131420,"currentOdometer":132000,"totalDistanceKm":580,"totalFuelLitres":160,"totalFuelCost":15360,"totalAdvance":4000,"stationNarration":"BPCL Mundra Port Gate Pump","gpsLocation":"Mundra Port Berth #2","lat":22.84,"lng":69.7,"holdMinutes":10},{"id":"v-3","regNo":"GJ 39 TA 5847","category":"27 Tonne","driverName":"Mahesh Rabari","driverPhone":"9727344455","assignedManager":"Rajsinh Gohil","status":"UNLOADING","startOdometer":158150,"currentOdometer":158900,"totalDistanceKm":750,"totalFuelLitres":210,"totalFuelCost":20160,"totalAdvance":6000,"stationNarration":"HPCL Sarkhej Ring Road","gpsLocation":"Ahmedabad GIDC Warehouse","lat":23.02,"lng":72.57,"holdMinutes":15},{"id":"v-4","regNo":"GJ 39 TA 6747","category":"27 Tonne","driverName":"Karsan Bharwad","driverPhone":"9909988776","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","startOdometer":124500,"currentOdometer":124500,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Gandhidham Main Yard","gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-5","regNo":"GJ 39 TA 6247","category":"27 Tonne","driverName":"Devjibhai Prajapati","driverPhone":"9426011224","assignedManager":"Vikram Jadeja","status":"MAINTENENS","startOdometer":167000,"currentOdometer":167000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Anjar Service Workshop","gpsLocation":"Anjar Service Workshop","lat":23.13,"lng":70.02,"holdMinutes":0},{"id":"v-6","regNo":"GJ 39 TA 8047","category":"27 Tonne","driverName":"Bhagwanji Darji","driverPhone":"9876543210","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","startOdometer":140310,"currentOdometer":141000,"totalDistanceKm":690,"totalFuelLitres":190,"totalFuelCost":18240,"totalAdvance":5500,"stationNarration":"Nayara Petroleum Radhanpur","gpsLocation":"Radhanpur Highway","lat":23.83,"lng":71.6,"holdMinutes":20},{"id":"v-7","regNo":"GJ 39 TA 8547","category":"27 Tonne","driverName":"Muljibhai Joshi","driverPhone":"9123456789","assignedManager":"Vikram Jadeja","status":"IN LOADING","startOdometer":138960,"currentOdometer":139500,"totalDistanceKm":540,"totalFuelLitres":150,"totalFuelCost":14400,"totalAdvance":4000,"stationNarration":"IOCL Kandla Port Pump","gpsLocation":"Kandla Port Gate 3","lat":23,"lng":70.22,"holdMinutes":5},{"id":"v-8","regNo":"GJ 39 TA 3547","category":"27 Tonne","driverName":"Valjibhai Solanki","driverPhone":"9925012345","assignedManager":"Rajsinh Gohil","status":"TRIP NOT ASSIGN","startOdometer":118000,"currentOdometer":118000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Gandhidham Main Yard","gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-9","regNo":"GJ 12 BZ 7447","category":"32 Tonne","driverName":"Bharatsinh Jadeja","driverPhone":"9825123456","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","startOdometer":181220,"currentOdometer":182000,"totalDistanceKm":780,"totalFuelLitres":240,"totalFuelCost":23040,"totalAdvance":7000,"stationNarration":"Reliance Pump Himmatnagar","gpsLocation":"Himmatnagar Bypass","lat":23.6,"lng":72.97,"holdMinutes":35},{"id":"v-10","regNo":"GJ 12 BZ 9447","category":"32 Tonne","driverName":"Kishorsinh Zala","driverPhone":"9726098765","assignedManager":"Vikram Jadeja","status":"IN LOADING","startOdometer":174300,"currentOdometer":175000,"totalDistanceKm":700,"totalFuelLitres":220,"totalFuelCost":21120,"totalAdvance":6500,"stationNarration":"IOCL Adani Port Terminal","gpsLocation":"Adani Port Terminal","lat":22.82,"lng":69.72,"holdMinutes":12},{"id":"v-11","regNo":"GJ 12 BY 9227","category":"32 Tonne","driverName":"Pruthvisinh Rathod","driverPhone":"9428011111","assignedManager":"Rajsinh Gohil","status":"UNLOADING","startOdometer":190160,"currentOdometer":191000,"totalDistanceKm":840,"totalFuelLitres":260,"totalFuelCost":24960,"totalAdvance":7500,"stationNarration":"BPCL Surat Hazira Highway","gpsLocation":"Surat ICD Terminal","lat":21.17,"lng":72.83,"holdMinutes":18},{"id":"v-12","regNo":"GJ 12 BY 7363","category":"32 Tonne","driverName":"Digantsinh Gohil","driverPhone":"9879022222","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","startOdometer":165000,"currentOdometer":165000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Gandhidham Main Yard","gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-13","regNo":"GJ 12 BY 7427","category":"32 Tonne","driverName":"Aniruddhsinh Parmar","driverPhone":"9909033333","assignedManager":"Vikram Jadeja","status":"MAINTENENS","startOdometer":204000,"currentOdometer":204000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Bhuj Service Workshop","gpsLocation":"Bhuj Workshop","lat":23.25,"lng":69.81,"holdMinutes":0},{"id":"v-14","regNo":"GJ 12 BY 2627","category":"32 Tonne","driverName":"Jayrajsinh Chauhan","driverPhone":"9427044444","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","startOdometer":155320,"currentOdometer":156000,"totalDistanceKm":680,"totalFuelLitres":205,"totalFuelCost":19680,"totalAdvance":6000,"stationNarration":"HPCL Mehsana Toll Bypass","gpsLocation":"Mehsana Highway","lat":23.58,"lng":72.38,"holdMinutes":15},{"id":"v-15","regNo":"GJ 39 TA 1747","category":"32 Tonne","driverName":"Govindbhai Bharwad","driverPhone":"9825055555","assignedManager":"Vikram Jadeja","status":"IN LOADING","startOdometer":147370,"currentOdometer":148000,"totalDistanceKm":630,"totalFuelLitres":195,"totalFuelCost":18720,"totalAdvance":5500,"stationNarration":"BPCL Mundra West Port","gpsLocation":"Mundra Port Berth #6","lat":22.84,"lng":69.7,"holdMinutes":8},{"id":"v-16","regNo":"GJ 39 TA 3847","category":"32 Tonne","driverName":"Manjibhai Desai","driverPhone":"9727066666","assignedManager":"Rajsinh Gohil","status":"TRIP NOT ASSIGN","startOdometer":134000,"currentOdometer":134000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Gandhidham Main Yard","gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-17","regNo":"GJ 39 TA 5647","category":"32 Tonne","driverName":"Kantibhai Patel","driverPhone":"9909077777","assignedManager":"Rajsinh Gohil","status":"UNLOADING","startOdometer":188190,"currentOdometer":189000,"totalDistanceKm":810,"totalFuelLitres":250,"totalFuelCost":24000,"totalAdvance":7200,"stationNarration":"IOCL Baroda Golden Chowkdi","gpsLocation":"Baroda GIDC","lat":22.3,"lng":73.18,"holdMinutes":25},{"id":"v-18","regNo":"GJ 39 TA 6547","category":"32 Tonne","driverName":"Amrutbhai Prajapati","driverPhone":"9426088888","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","startOdometer":170250,"currentOdometer":171000,"totalDistanceKm":750,"totalFuelLitres":230,"totalFuelCost":22080,"totalAdvance":6800,"stationNarration":"Nayara Aslali Ring Road","gpsLocation":"Ahmedabad Ring Road","lat":23.03,"lng":72.58,"holdMinutes":70},{"id":"v-19","regNo":"GJ 39 TA 7647","category":"32 Tonne","driverName":"Popatbhai Rabari","driverPhone":"9825099999","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","startOdometer":142000,"currentOdometer":142000,"totalDistanceKm":0,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"stationNarration":"Gandhidham Main Yard","gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0}];
+    let managers = JSON.parse(localStorage.getItem('jl_v2_managers')) || [{"id":"m-1","name":"Vikram Jadeja","phone":"+91 98250 99001","zone":"Gujarat North & Port Hub"},{"id":"m-2","name":"Rajsinh Gohil","phone":"+91 94260 88221","zone":"Ahmedabad & Central"},{"id":"m-3","name":"Jayesh Ahir","phone":"+91 97273 40060","zone":"Kutch & Mundra Corridor"}];
+    let trips = JSON.parse(localStorage.getItem('jl_v2_trips')) || [{"id":"trip-1","tripCode":"TRIP-JL-101","vehicleId":"v-1","date":"2026-11-04","fromLocation":"Mundra Port Berth 2 (Google Maps Geofence)","toLocation":"Ahmedabad GIDC Warehouse (Google Maps Geofence)","prevOdometer":144540,"odometer":145200,"distanceKm":660,"fuelLitres":185,"fuelAmount":17760,"fuelPaymentMode":"LOGIXPAY","driverAdvance":5000,"advancePaymentMode":"CASH","stationNarration":"IOCL Samakhiali Highway Pump - Slip #9421"},{"id":"trip-2","tripCode":"TRIP-JL-102","vehicleId":"v-9","date":"2026-11-04","fromLocation":"Mundra Port Terminal","toLocation":"Himmatnagar Bypass GIDC","prevOdometer":181220,"odometer":182000,"distanceKm":780,"fuelLitres":240,"fuelAmount":23040,"fuelPaymentMode":"LOGIXPAY","driverAdvance":7000,"advancePaymentMode":"ONLINE","stationNarration":"Reliance Pump Himmatnagar - Slip #4088"}];
+
+    function saveAll() {
+      localStorage.setItem('jl_v2_vehicles', JSON.stringify(vehicles));
+      localStorage.setItem('jl_v2_managers', JSON.stringify(managers));
+      localStorage.setItem('jl_v2_trips', JSON.stringify(trips));
+      renderApp();
+    }
+
+    function showNotice(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3200);
+    }
+
+    function closeModals() {
+      document.querySelectorAll('#fuelModal,#ledgerModal,#gpsModal').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#fuelModal,#ledgerModal,#gpsModal').forEach(el => el.classList.remove('flex'));
+    }
+
+    function openFuelModal(vId) {
+      const sel = document.getElementById('fVehicle');
+      sel.innerHTML = vehicles.map(v => `<option value="${v.id}" ${v.id===vId?'selected':''}>${v.regNo} (${v.category} - Odo: ${v.currentOdometer} km)</option>`).join('');
+      const target = vehicles.find(v => v.id === (vId || vehicles[0].id)) || vehicles[0];
+      document.getElementById('fOdo').value = (target.currentOdometer || 140000) + 650;
+      document.getElementById('fLitres').value = 190;
+      document.getElementById('fAmt').value = 18240;
+      const m = document.getElementById('fuelModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+
+    function fillSample(type) {
+      const vId = document.getElementById('fVehicle').value;
+      const target = vehicles.find(v => v.id === vId) || vehicles[0];
+      if (type === 'iocl') {
+        document.getElementById('fOdo').value = target.currentOdometer + 680;
+        document.getElementById('fLitres').value = 195;
+        document.getElementById('fAmt').value = 18720;
+        document.getElementById('fStation').value = 'IOCL Samakhiali Highway Pump - Slip #4419';
+      } else if (type === 'reliance') {
+        document.getElementById('fOdo').value = target.currentOdometer + 820;
+        document.getElementById('fLitres').value = 235;
+        document.getElementById('fAmt').value = 22560;
+        document.getElementById('fStation').value = 'Reliance Petroleum Jamnagar Bypass - Slip #9920';
+      } else {
+        document.getElementById('fOdo').value = target.currentOdometer + 560;
+        document.getElementById('fLitres').value = 165;
+        document.getElementById('fAmt').value = 15840;
+        document.getElementById('fStation').value = 'BPCL Mundra Port Terminal - Slip #3104';
+      }
+      showNotice('AI Sample Receipt Auto-Fetched!');
+    }
+
+    function saveFuelEntry() {
+      const vId = document.getElementById('fVehicle').value;
+      const newOdo = Number(document.getElementById('fOdo').value);
+      const litres = Number(document.getElementById('fLitres').value);
+      const amt = Number(document.getElementById('fAmt').value);
+      const adv = Number(document.getElementById('fAdv').value);
+      const st = document.getElementById('fStation').value;
+
+      vehicles = vehicles.map(v => {
+        if (v.id !== vId) return v;
+        const run = Math.max(0, newOdo - (v.currentOdometer || 140000));
+        trips.unshift({
+          id: 't-' + Date.now(),
+          tripCode: 'FUEL-' + Math.floor(100 + Math.random()*900),
+          vehicleId: v.id,
+          date: new Date().toISOString().split('T')[0],
+          odometer: newOdo,
+          distanceKm: run,
+          fuelLitres: litres,
+          fuelAmount: amt,
+          driverAdvance: adv,
+          stationNarration: st
+        });
+        return {
+          ...v,
+          currentOdometer: newOdo,
+          totalDistanceKm: (v.totalDistanceKm || 0) + run,
+          totalFuelLitres: (v.totalFuelLitres || 0) + litres,
+          totalFuelCost: (v.totalFuelCost || 0) + amt,
+          totalAdvance: (v.totalAdvance || 0) + adv,
+          stationNarration: st
+        };
+      });
+      saveAll();
+      closeModals();
+      showNotice('Fuel, Odometer & Station Narration Saved!');
+    }
+
+    function openLedger(vId) {
+      const v = vehicles.find(x => x.id === vId);
+      if (!v) return;
+      const dist = v.totalDistanceKm || 0;
+      const lit = v.totalFuelLitres || 0;
+      const cost = v.totalFuelCost || 0;
+      const avg = lit > 0 ? (dist / lit).toFixed(2) : '0.00';
+      const cpk = dist > 0 ? (cost / dist).toFixed(2) : '0.00';
+      const vTrips = trips.filter(t => t.vehicleId === v.id);
+
+      document.getElementById('ledgerTitle').innerText = v.regNo + ' — Full Historical Ledger (' + v.driverName + ')';
+      document.getElementById('ledgerBody').innerHTML = `
+        <div class="grid grid-cols-3 sm:grid-cols-6 gap-2 bg-slate-900 text-white p-3 rounded-2xl">
+          <div><span class="text-[9px] text-slate-400 block">Odometer</span><b>${v.currentOdometer} km</b></div>
+          <div><span class="text-[9px] text-slate-400 block">Distance</span><b class="text-cyan-400">${dist} km</b></div>
+          <div><span class="text-[9px] text-slate-400 block">Diesel</span><b class="text-amber-400">${lit} L</b></div>
+          <div><span class="text-[9px] text-slate-400 block">Expense</span><b class="text-rose-300">₹${cost}</b></div>
+          <div><span class="text-[9px] text-slate-400 block">Mileage Avg</span><b class="text-emerald-400">${avg} km/L</b></div>
+          <div><span class="text-[9px] text-slate-400 block">Cost/KM</span><b class="text-purple-300">₹${cpk}/km</b></div>
+        </div>
+        <div class="font-bold text-slate-700">Station Narration: ${v.stationNarration || 'Gandhidham Yard'}</div>
+        <div class="border rounded-xl overflow-x-auto">
+          <table class="w-full text-left text-[11px]">
+            <thead class="bg-slate-100 border-b">
+              <tr><th class="p-2">Code</th><th class="p-2">Odo / Run</th><th class="p-2">Diesel</th><th class="p-2">Avg</th><th class="p-2">Advance</th><th class="p-2">Station Narration</th></tr>
+            </thead>
+            <tbody>
+              ${vTrips.map(t => `<tr class="border-b"><td class="p-2 font-bold">${t.tripCode}</td><td class="p-2">${t.odometer || v.currentOdometer} km (+${t.distanceKm || 650} km)</td><td class="p-2 font-bold text-amber-700">${t.fuelLitres}L (₹${t.fuelAmount})</td><td class="p-2 font-bold text-emerald-700">${((t.distanceKm||650)/(t.fuelLitres||1)).toFixed(2)} km/L</td><td class="p-2">₹${t.driverAdvance}</td><td class="p-2">${t.stationNarration || t.fromLocation}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+      const m = document.getElementById('ledgerModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+
+    function openGpsModal() {
+      const sel = document.getElementById('gpsVehicleSelect');
+      sel.innerHTML = vehicles.map(v => `<option value="${v.id}">${v.driverName} (${v.driverPhone}) - ${v.regNo}</option>`).join('');
+      updateGpsModalView();
+      const m = document.getElementById('gpsModal');
+      m.classList.remove('hidden'); m.classList.add('flex');
+    }
+
+    function updateGpsModalView() {
+      const vId = document.getElementById('gpsVehicleSelect').value;
+      const v = vehicles.find(x => x.id === vId) || vehicles[0];
+      document.getElementById('gpsMapContainer').innerHTML = `<iframe width="100%" height="100%" style="border:0" src="https://maps.google.com/maps?q=${encodeURIComponent(v.gpsLocation)}&z=13&output=embed"></iframe>`;
+    }
+
+    function allowPhoneGps() {
+      if (!navigator.geolocation) { showNotice('Geolocation not supported'); return; }
+      navigator.geolocation.getCurrentPosition(pos => {
+        const vId = document.getElementById('gpsVehicleSelect').value;
+        const lat = pos.coords.latitude.toFixed(4);
+        const lng = pos.coords.longitude.toFixed(4);
+        vehicles = vehicles.map(v => v.id === vId ? { ...v, gpsLocation: lat + ',' + lng } : v);
+        saveAll();
+        updateGpsModalView();
+        showNotice('Phone GPS Permission Allowed! Live Location Updated.');
+      }, () => showNotice('Please allow location permission in browser popup'));
+    }
+
+    function renderApp() {
+      const totalDist = vehicles.reduce((a, v) => a + (v.totalDistanceKm || 0), 0);
+      const totalLit = vehicles.reduce((a, v) => a + (v.totalFuelLitres || 0), 0);
+      const totalCost = vehicles.reduce((a, v) => a + (v.totalFuelCost || 0), 0);
+      const totalAdv = vehicles.reduce((a, v) => a + (v.totalAdvance || 0), 0);
+      const avg = totalLit > 0 ? (totalDist / totalLit).toFixed(2) : '0.00';
+      const cpk = totalDist > 0 ? (totalCost / totalDist).toFixed(2) : '0.00';
+
+      document.getElementById('kpiBar').innerHTML = `
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">TOTAL TRAILERS</div><div class="text-xl font-black">${vehicles.length}</div></div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">DISTANCE RUN</div><div class="text-xl font-black text-cyan-400">${totalDist.toLocaleString()} km</div></div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">DIESEL LITRES</div><div class="text-xl font-black text-amber-400">${totalLit.toLocaleString()} L</div></div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">MILEAGE AVG</div><div class="text-xl font-black text-emerald-400">${avg} km/L</div></div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">COST PER KM</div><div class="text-xl font-black text-purple-400">₹${cpk}/km</div></div>
+        <div class="bg-slate-900 border border-white/10 rounded-2xl p-3"><div class="text-[10px] text-slate-400">DRIVER ADVANCE</div><div class="text-xl font-black text-teal-400">₹${totalAdv.toLocaleString()}</div></div>
+      `;
+
+      document.getElementById('vehicleGrid').innerHTML = vehicles.map(v => {
+        const d = v.totalDistanceKm || 0;
+        const l = v.totalFuelLitres || 0;
+        const c = v.totalFuelCost || 0;
+        const m = l > 0 ? (d / l).toFixed(2) : '0.00';
+        const k = d > 0 ? (c / d).toFixed(2) : '0.00';
+        return `
+          <div onclick="openLedger('${v.id}')" class="bg-slate-900 border border-white/10 hover:border-amber-400 rounded-3xl p-4 space-y-3 cursor-pointer shadow-xl">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="px-2 py-0.5 rounded bg-amber-400 text-[#0B192C] text-[10px] font-black">${v.category}</span>
+                <span class="text-[10px] text-amber-300 font-bold ml-1">📖 Click for Full Ledger</span>
+                <h3 class="text-lg font-black text-white mt-0.5">${v.regNo}</h3>
+              </div>
+              <span class="px-2 py-1 rounded-lg bg-white/10 text-[10px] font-black text-cyan-300">${v.status}</span>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-xs bg-black/30 p-2.5 rounded-xl">
+              <div><span class="text-[9px] text-slate-400 block">Odometer</span><b>${(v.currentOdometer||0).toLocaleString()} km</b></div>
+              <div><span class="text-[9px] text-slate-400 block">Distance</span><b class="text-cyan-400">${d} km</b></div>
+              <div><span class="text-[9px] text-slate-400 block">Diesel</span><b class="text-amber-400">${l} L</b></div>
+              <div><span class="text-[9px] text-slate-400 block">Expense</span><b class="text-rose-300">₹${c.toLocaleString()}</b></div>
+              <div><span class="text-[9px] text-slate-400 block">Mileage Avg</span><b class="text-emerald-400">${m} km/L</b></div>
+              <div><span class="text-[9px] text-slate-400 block">Cost/KM</span><b class="text-purple-300">₹${k}/km</b></div>
+            </div>
+            <div class="flex justify-between text-xs bg-white/5 p-2.5 rounded-xl">
+              <div><span class="text-[9px] text-slate-400 block">DRIVER & ADVANCE</span><b>${v.driverName}</b><div class="text-emerald-400 font-black text-[10px]">Adv: ₹${v.totalAdvance||0}</div></div>
+              <div class="text-right"><span class="text-[9px] text-slate-400 block">MANAGER & PHONE</span><b>${v.assignedManager}</b><div class="text-amber-400 font-bold text-[10px]">${v.driverPhone}</div></div>
+            </div>
+            <div class="text-[11px] text-amber-300 font-bold truncate">⛽ Station: ${v.stationNarration || 'Gandhidham Yard'}</div>
+            <div class="flex gap-2 pt-1" onclick="event.stopPropagation()">
+              <button onclick="openFuelModal('${v.id}')" class="flex-1 py-2 rounded-xl bg-amber-400 text-[#0B192C] font-black text-xs">📷 + Fuel / Scan</button>
+              <a href="tel:${v.driverPhone}" class="px-3 py-2 rounded-xl bg-slate-800 text-white font-bold text-xs">📞 Call</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    renderApp();
+  </script>
 </body>
 </html>
