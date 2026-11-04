@@ -12,7 +12,7 @@
   <link rel="manifest" href='data:application/manifest+json,{"name":"Jayesh Logistics Fleet App","short_name":"JayeshFleet","start_url":".","display":"standalone","background_color":"#0B192C","theme_color":"#0B192C","icons":[{"src":"https://cdn-icons-png.flaticon.com/512/2554/2554978.png","sizes":"512x512","type":"image/png"}]}' />
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-[#0B192C] text-slate-100 font-sans min-h-screen pb-12">
+<body class="bg-[#0B192C] text-slate-100 font-sans min-h-screen pb-16">
   <div id="app"></div>
   <script>
     const defaultVehicles = [{"id":"v-1","regNo":"GJ 39 TA 7147","category":"27 Tonne","driverName":"Ramesh Ahir","driverPhone":"9727340060","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","currentOdometer":145200,"totalFuelLitres":185,"totalFuelCost":17760,"totalAdvance":5000,"gpsLocation":"NH-27 Samakhiali Toll Plaza","lat":23.32,"lng":70.45,"holdMinutes":65},{"id":"v-2","regNo":"GJ 39 TA 5347","category":"27 Tonne","driverName":"Suresh Patel","driverPhone":"9825011223","assignedManager":"Vikram Jadeja","status":"IN LOADING","currentOdometer":132000,"totalFuelLitres":160,"totalFuelCost":15360,"totalAdvance":4000,"gpsLocation":"Mundra Port Berth #2","lat":22.84,"lng":69.7,"holdMinutes":10},{"id":"v-3","regNo":"GJ 39 TA 5847","category":"27 Tonne","driverName":"Mahesh Rabari","driverPhone":"9727344455","assignedManager":"Rajsinh Gohil","status":"UNLOADING","currentOdometer":158900,"totalFuelLitres":210,"totalFuelCost":20160,"totalAdvance":6000,"gpsLocation":"Ahmedabad GIDC Warehouse","lat":23.02,"lng":72.57,"holdMinutes":15},{"id":"v-4","regNo":"GJ 39 TA 6747","category":"27 Tonne","driverName":"Karsan Bharwad","driverPhone":"9909988776","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","currentOdometer":124500,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-5","regNo":"GJ 39 TA 6247","category":"27 Tonne","driverName":"Devjibhai Prajapati","driverPhone":"9426011224","assignedManager":"Vikram Jadeja","status":"MAINTENENS","currentOdometer":167000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Anjar Service Workshop","lat":23.13,"lng":70.02,"holdMinutes":0},{"id":"v-6","regNo":"GJ 39 TA 8047","category":"27 Tonne","driverName":"Bhagwanji Darji","driverPhone":"9876543210","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","currentOdometer":141000,"totalFuelLitres":190,"totalFuelCost":18240,"totalAdvance":5500,"gpsLocation":"Radhanpur Highway","lat":23.83,"lng":71.6,"holdMinutes":20},{"id":"v-7","regNo":"GJ 39 TA 8547","category":"27 Tonne","driverName":"Muljibhai Joshi","driverPhone":"9123456789","assignedManager":"Vikram Jadeja","status":"IN LOADING","currentOdometer":139500,"totalFuelLitres":150,"totalFuelCost":14400,"totalAdvance":4000,"gpsLocation":"Kandla Port Gate 3","lat":23,"lng":70.22,"holdMinutes":5},{"id":"v-8","regNo":"GJ 39 TA 3547","category":"27 Tonne","driverName":"Valjibhai Solanki","driverPhone":"9925012345","assignedManager":"Rajsinh Gohil","status":"TRIP NOT ASSIGN","currentOdometer":118000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-9","regNo":"GJ 12 BZ 7447","category":"32 Tonne","driverName":"Bharatsinh Jadeja","driverPhone":"9825123456","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","currentOdometer":182000,"totalFuelLitres":240,"totalFuelCost":23040,"totalAdvance":7000,"gpsLocation":"Himmatnagar Bypass","lat":23.6,"lng":72.97,"holdMinutes":35},{"id":"v-10","regNo":"GJ 12 BZ 9447","category":"32 Tonne","driverName":"Kishorsinh Zala","driverPhone":"9726098765","assignedManager":"Vikram Jadeja","status":"IN LOADING","currentOdometer":175000,"totalFuelLitres":220,"totalFuelCost":21120,"totalAdvance":6500,"gpsLocation":"Adani Port Terminal","lat":22.82,"lng":69.72,"holdMinutes":12},{"id":"v-11","regNo":"GJ 12 BY 9227","category":"32 Tonne","driverName":"Pruthvisinh Rathod","driverPhone":"9428011111","assignedManager":"Rajsinh Gohil","status":"UNLOADING","currentOdometer":191000,"totalFuelLitres":260,"totalFuelCost":24960,"totalAdvance":7500,"gpsLocation":"Surat ICD Terminal","lat":21.17,"lng":72.83,"holdMinutes":18},{"id":"v-12","regNo":"GJ 12 BY 7363","category":"32 Tonne","driverName":"Digantsinh Gohil","driverPhone":"9879022222","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","currentOdometer":165000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-13","regNo":"GJ 12 BY 7427","category":"32 Tonne","driverName":"Aniruddhsinh Parmar","driverPhone":"9909033333","assignedManager":"Vikram Jadeja","status":"MAINTENENS","currentOdometer":204000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Bhuj Workshop","lat":23.25,"lng":69.81,"holdMinutes":0},{"id":"v-14","regNo":"GJ 12 BY 2627","category":"32 Tonne","driverName":"Jayrajsinh Chauhan","driverPhone":"9427044444","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","currentOdometer":156000,"totalFuelLitres":205,"totalFuelCost":19680,"totalAdvance":6000,"gpsLocation":"Mehsana Highway","lat":23.58,"lng":72.38,"holdMinutes":15},{"id":"v-15","regNo":"GJ 39 TA 1747","category":"32 Tonne","driverName":"Govindbhai Bharwad","driverPhone":"9825055555","assignedManager":"Vikram Jadeja","status":"IN LOADING","currentOdometer":148000,"totalFuelLitres":195,"totalFuelCost":18720,"totalAdvance":5500,"gpsLocation":"Mundra Port Berth #6","lat":22.84,"lng":69.7,"holdMinutes":8},{"id":"v-16","regNo":"GJ 39 TA 3847","category":"32 Tonne","driverName":"Manjibhai Desai","driverPhone":"9727066666","assignedManager":"Rajsinh Gohil","status":"TRIP NOT ASSIGN","currentOdometer":134000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0},{"id":"v-17","regNo":"GJ 39 TA 5647","category":"32 Tonne","driverName":"Kantibhai Patel","driverPhone":"9909077777","assignedManager":"Rajsinh Gohil","status":"UNLOADING","currentOdometer":189000,"totalFuelLitres":250,"totalFuelCost":24000,"totalAdvance":7200,"gpsLocation":"Baroda GIDC","lat":22.3,"lng":73.18,"holdMinutes":25},{"id":"v-18","regNo":"GJ 39 TA 6547","category":"32 Tonne","driverName":"Amrutbhai Prajapati","driverPhone":"9426088888","assignedManager":"Jayesh Ahir","status":"IN TRANSIT","currentOdometer":171000,"totalFuelLitres":230,"totalFuelCost":22080,"totalAdvance":6800,"gpsLocation":"Ahmedabad Ring Road","lat":23.03,"lng":72.58,"holdMinutes":70},{"id":"v-19","regNo":"GJ 39 TA 7647","category":"32 Tonne","driverName":"Popatbhai Rabari","driverPhone":"9825099999","assignedManager":"Vikram Jadeja","status":"TRIP NOT ASSIGN","currentOdometer":142000,"totalFuelLitres":0,"totalFuelCost":0,"totalAdvance":0,"gpsLocation":"Gandhidham Yard","lat":23.07,"lng":70.13,"holdMinutes":0}];
@@ -22,6 +22,11 @@
     let vehicles = JSON.parse(localStorage.getItem('jl_vehicles')) || defaultVehicles;
     let managers = JSON.parse(localStorage.getItem('jl_managers')) || defaultManagers;
     let trips = JSON.parse(localStorage.getItem('jl_trips')) || defaultTrips;
+    let activeTab = 'fleet';
+    let editingIndex = null;
+    let showAddTrip = false;
+    let showTracker = false;
+    let trackedIdx = 0;
 
     function saveData() {
       localStorage.setItem('jl_vehicles', JSON.stringify(vehicles));
@@ -30,55 +35,214 @@
       renderApp();
     }
 
+    window.setTab = function(tab) { activeTab = tab; renderApp(); };
+    window.openEditModal = function(idx) { editingIndex = idx; renderApp(); };
+    window.closeModals = function() { editingIndex = null; showAddTrip = false; showTracker = false; renderApp(); };
+    window.openTripModal = function() { showAddTrip = true; renderApp(); };
+    window.openTrackerModal = function() { showTracker = true; renderApp(); };
+    window.selectTrackedDriver = function(val) { trackedIdx = Number(val); renderApp(); };
+
+    window.saveVehicleEdit = function(e) {
+      e.preventDefault();
+      const f = e.target;
+      vehicles[editingIndex] = {
+        ...vehicles[editingIndex],
+        regNo: f.regNo.value.toUpperCase(),
+        category: f.category.value,
+        driverName: f.driverName.value,
+        driverPhone: f.driverPhone.value,
+        assignedManager: f.assignedManager.value,
+        status: f.status.value,
+        gpsLocation: f.gpsLocation.value
+      };
+      editingIndex = null;
+      saveData();
+    };
+
+    window.saveNewTrip = function(e) {
+      e.preventDefault();
+      const f = e.target;
+      const litres = Number(f.fuelLitres.value || 0);
+      const amt = Number(f.fuelAmount.value || litres * 96);
+      const adv = Number(f.driverAdvance.value || 0);
+      trips.unshift({
+        id: 'trip-' + Date.now(),
+        tripCode: 'TRIP-JL-' + Math.floor(100 + Math.random() * 900),
+        vehicleId: f.vehicleId.value,
+        date: new Date().toISOString().split('T')[0],
+        fromLocation: f.fromLocation.value,
+        toLocation: f.toLocation.value,
+        fuelLitres: litres,
+        fuelAmount: amt,
+        fuelPaymentMode: f.fuelPaymentMode.value,
+        driverAdvance: adv,
+        advancePaymentMode: 'CASH'
+      });
+      showAddTrip = false;
+      saveData();
+    };
+
+    window.scanInvoiceAutoFill = function(input) {
+      if (input.files && input.files[0]) {
+        const toInput = document.getElementById('toLocationInput');
+        if (toInput) {
+          toInput.value = 'M/s Reliance Consignee Hub, Jamnagar Highway (Auto-Extracted from ' + input.files[0].name + ')';
+        }
+      }
+    };
+
     function renderApp() {
       const app = document.getElementById('app');
+      const tv = vehicles[trackedIdx] || vehicles[0];
       app.innerHTML = `
         <header class="bg-[#0B192C] border-b border-white/10 sticky top-0 z-40 p-4 shadow-xl">
-          <div class="max-w-5xl mx-auto flex items-center justify-between">
+          <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
             <div>
-              <span class="bg-amber-400 text-[#0B192C] text-[10px] font-black uppercase px-2 py-0.5 rounded">FLEET & FUEL APP</span>
+              <span class="bg-amber-400 text-[#0B192C] text-[10px] font-black uppercase px-2 py-0.5 rounded">FLEET & FUEL MANAGEMENT</span>
               <h1 class="text-xl font-black text-white mt-0.5">JAYESH LOGISTICS</h1>
             </div>
-            <div class="text-right">
-              <span class="text-xs font-bold text-emerald-400">${vehicles.length} Active Trailers</span>
-              <div class="text-[10px] text-slate-400">Auto-Saved on Phone</div>
+            <div class="flex gap-2 flex-wrap justify-center">
+              <button onclick="openTripModal()" class="px-3.5 py-2 rounded-xl bg-amber-400 text-[#0B192C] text-xs font-black">+ Add Trip & Stations</button>
+              <button onclick="openTrackerModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">📍 Live Driver Tracker</button>
+              <button onclick="setTab('fleet')" class="px-3.5 py-2 rounded-xl ${activeTab === 'fleet' ? 'bg-blue-600 text-white' : 'bg-white/10 text-slate-300'} text-xs font-black">Trailers (${vehicles.length})</button>
+              <button onclick="setTab('ledger')" class="px-3.5 py-2 rounded-xl ${activeTab === 'ledger' ? 'bg-blue-600 text-white' : 'bg-white/10 text-slate-300'} text-xs font-black">Ledger (${trips.length})</button>
             </div>
           </div>
         </header>
-        <main class="max-w-5xl mx-auto p-4 space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            ${vehicles.map((v, idx) => `
-              <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 space-y-3 shadow-lg">
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="px-2 py-0.5 rounded bg-amber-400 text-[#0B192C] text-[10px] font-black">${v.category}</span>
-                    <h3 class="text-lg font-black text-white mt-1">${v.regNo}</h3>
+        <main class="max-w-6xl mx-auto p-4 space-y-4">
+          ${activeTab === 'fleet' ? `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${vehicles.map((v, idx) => `
+                <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 space-y-3 shadow-lg">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <span class="px-2 py-0.5 rounded bg-amber-400 text-[#0B192C] text-[10px] font-black">${v.category}</span>
+                      <h3 class="text-lg font-black text-white mt-1">${v.regNo}</h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-1 rounded-xl text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">${v.status}</span>
+                      <button onclick="openEditModal(${idx})" class="px-2.5 py-1.5 rounded-xl bg-white/10 text-amber-400 text-xs font-bold">✏️ Edit</button>
+                    </div>
                   </div>
-                  <span class="px-2.5 py-1 rounded-xl text-[10px] font-black bg-cyan-500/20 text-cyan-300 border border-cyan-500/40">${v.status}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-2 text-xs bg-white/5 p-3 rounded-2xl">
-                  <div>
-                    <span class="text-slate-400 text-[10px] block">DRIVER & PHONE</span>
-                    <span class="font-bold text-white">${v.driverName}</span>
-                    <div class="text-[10px] text-amber-400 font-bold">${v.driverPhone}</div>
+                  <div class="grid grid-cols-2 gap-2 text-xs bg-white/5 p-3 rounded-2xl">
+                    <div>
+                      <span class="text-slate-400 text-[10px] block">DRIVER & PHONE</span>
+                      <span class="font-bold text-white">${v.driverName}</span>
+                      <div class="text-[10px] text-amber-400 font-bold">${v.driverPhone}</div>
+                    </div>
+                    <div>
+                      <span class="text-slate-400 text-[10px] block">MANAGER</span>
+                      <span class="font-bold text-white">${v.assignedManager}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span class="text-slate-400 text-[10px] block">MANAGER</span>
-                    <span class="font-bold text-white">${v.assignedManager}</span>
+                  <div class="text-xs bg-white/5 p-3 rounded-2xl flex items-center justify-between">
+                    <span class="truncate pr-2">📍 ${v.gpsLocation}</span>
+                    <a href="https://maps.google.com/?q=${encodeURIComponent(v.gpsLocation)}" target="_blank" class="text-amber-400 font-bold underline shrink-0">Map</a>
+                  </div>
+                  <div class="flex gap-2 pt-1">
+                    <a href="tel:${v.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs text-center">📞 Call Driver</a>
+                    <a href="https://wa.me/91${v.driverPhone.replace(/\D/g,'').slice(-10)}?text=Share%20Live%20Location%20for%20${encodeURIComponent(v.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-xs text-center">💬 Request GPS</a>
                   </div>
                 </div>
-                <div class="text-xs bg-white/5 p-3 rounded-2xl flex items-center justify-between">
-                  <span>📍 ${v.gpsLocation}</span>
-                  <a href="https://maps.google.com/?q=${encodeURIComponent(v.gpsLocation)}" target="_blank" class="text-amber-400 font-bold underline">Map</a>
-                </div>
-                <div class="flex gap-2 pt-1">
-                  <a href="tel:${v.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-xs text-center">📞 Call Driver</a>
-                  <a href="https://wa.me/91${v.driverPhone.replace(/\D/g,'').slice(-10)}?text=Share%20Live%20Location%20for%20${encodeURIComponent(v.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-xs text-center">💬 WhatsApp GPS</a>
+              `).join('')}
+            </div>
+          ` : `
+            <div class="bg-slate-900 border border-white/10 rounded-3xl p-5 overflow-x-auto">
+              <h3 class="text-lg font-black text-white mb-3">Trip & Fuel Ledger</h3>
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-white/10 text-slate-400">
+                    <th class="py-2">Trip Code</th>
+                    <th class="py-2">Route (From → To)</th>
+                    <th class="py-2">Fuel</th>
+                    <th class="py-2">Advance</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5">
+                  ${trips.map(t => `
+                    <tr>
+                      <td class="py-2.5 font-bold text-white">${t.tripCode}</td>
+                      <td class="py-2.5 text-slate-300">${t.fromLocation} → ${t.toLocation}</td>
+                      <td class="py-2.5 text-amber-400 font-bold">${t.fuelLitres} L (₹${t.fuelAmount})</td>
+                      <td class="py-2.5 text-emerald-400 font-bold">₹${t.driverAdvance}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `}
+        </main>
+
+        ${editingIndex !== null ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <form onsubmit="saveVehicleEdit(event)" class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">Edit Vehicle, Driver & Manager</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div><label class="font-bold block mb-1">VEHICLE NO</label><input name="regNo" value="${vehicles[editingIndex].regNo}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div><label class="font-bold block mb-1">CATEGORY</label><select name="category" class="w-full border rounded-xl p-2.5 font-bold"><option value="27 Tonne" ${vehicles[editingIndex].category==='27 Tonne'?'selected':''}>27 Tonne</option><option value="32 Tonne" ${vehicles[editingIndex].category==='32 Tonne'?'selected':''}>32 Tonne</option></select></div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="font-bold block mb-1">DRIVER NAME</label><input name="driverName" value="${vehicles[editingIndex].driverName}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+                <div><label class="font-bold block mb-1">DRIVER MOBILE</label><input name="driverPhone" value="${vehicles[editingIndex].driverPhone}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              </div>
+              <div><label class="font-bold block mb-1">MANAGER NAME</label><input name="assignedManager" value="${vehicles[editingIndex].assignedManager}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div><label class="font-bold block mb-1">STATUS</label><select name="status" class="w-full border rounded-xl p-2.5 font-bold"><option value="IN TRANSIT">IN TRANSIT</option><option value="IN LOADING">IN LOADING</option><option value="UNLOADING">UNLOADING</option><option value="TRIP NOT ASSIGN">TRIP NOT ASSIGN</option><option value="MAINTENENS">MAINTENENS</option></select></div>
+              <div><label class="font-bold block mb-1">CURRENT GPS LOCATION</label><input name="gpsLocation" value="${vehicles[editingIndex].gpsLocation}" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-[#0B192C] text-white font-black uppercase">Save Changes</button>
+            </form>
+          </div>
+        ` : ''}
+
+        ${showAddTrip ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 overflow-y-auto">
+            <form onsubmit="saveNewTrip(event)" class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs my-8">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">Add Trip & Google Map Geofence</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <div><label class="font-bold block mb-1">SELECT TRAILER</label><select name="vehicleId" class="w-full border rounded-xl p-2.5 font-bold">${vehicles.map(v => `<option value="${v.id}">${v.regNo} - ${v.driverName}</option>`).join('')}</select></div>
+              <div><label class="font-bold block mb-1">LOADING STATION (GOOGLE MAP PIN)</label><input name="fromLocation" value="Mundra Port Berth 2" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              <div>
+                <label class="font-bold block mb-1">UNLOADING CONSIGNEE STATION</label>
+                <div class="flex gap-2">
+                  <input id="toLocationInput" name="toLocation" value="Ahmedabad GIDC Warehouse" class="flex-1 border rounded-xl p-2.5 font-bold" required />
+                  <label class="px-3 py-2.5 bg-blue-600 text-white rounded-xl font-bold cursor-pointer shrink-0">📷 Scan Invoice<input type="file" accept="image/*" onchange="scanInvoiceAutoFill(this)" class="hidden" /></label>
                 </div>
               </div>
-            `).join('')}
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="font-bold block mb-1">FUEL LITRES</label><input type="number" name="fuelLitres" placeholder="185" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+                <div><label class="font-bold block mb-1">FUEL AMOUNT (₹)</label><input type="number" name="fuelAmount" placeholder="17760" class="w-full border rounded-xl p-2.5 font-bold" /></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div><label class="font-bold block mb-1">FUEL MODE</label><select name="fuelPaymentMode" class="w-full border rounded-xl p-2.5 font-bold"><option value="LOGIXPAY">LOGIXPAY</option><option value="ONLINE">ONLINE</option><option value="CASH">CASH</option></select></div>
+                <div><label class="font-bold block mb-1">DRIVER ADVANCE (₹)</label><input type="number" name="driverAdvance" placeholder="5000" class="w-full border rounded-xl p-2.5 font-bold" required /></div>
+              </div>
+              <button type="submit" class="w-full py-3 rounded-xl bg-[#0B192C] text-white font-black uppercase">Save Trip & Activate Geofence</button>
+            </form>
           </div>
-        </main>
+        ` : ''}
+
+        ${showTracker ? `
+          <div class="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+            <div class="bg-white text-slate-900 rounded-3xl max-w-md w-full p-6 space-y-3 text-xs">
+              <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="font-black text-base">Live Google Maps Driver Tracker</h3>
+                <button type="button" onclick="closeModals()" class="font-black text-lg">✕</button>
+              </div>
+              <select onchange="selectTrackedDriver(this.value)" class="w-full border rounded-xl p-2.5 font-bold">
+                ${vehicles.map((v, i) => `<option value="${i}" ${i===trackedIdx?'selected':''}>${v.driverName} (${v.driverPhone}) - ${v.regNo}</option>`).join('')}
+              </select>
+              <div class="w-full h-48 rounded-xl overflow-hidden border">
+                <iframe width="100%" height="100%" style="border:0" loading="lazy" src="https://maps.google.com/maps?q=${encodeURIComponent(tv.gpsLocation)}&z=13&output=embed"></iframe>
+              </div>
+              <div class="flex gap-2">
+                <a href="https://wa.me/91${tv.driverPhone.replace(/\D/g,'').slice(-10)}?text=Please%20share%20your%20WhatsApp%20Live%20Location%20for%20${encodeURIComponent(tv.regNo)}" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 text-white font-black text-center">1. Request WhatsApp GPS</a>
+                <a href="tel:${tv.driverPhone}" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white font-black text-center">2. Call Driver</a>
+              </div>
+            </div>
+          </div>
+        ` : ''}
       `;
     }
     renderApp();
